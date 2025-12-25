@@ -1,0 +1,33 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t my-app:latest .
+
+      - name: Deploy application
+        run: |
+          docker stop my-app || true
+          docker rm my-app || true
+          docker run -d --name my-app -p 80:8080 my-app:latest
+
+      - name: Check deployment
+        run: |
+          sleep 5
+          curl http://localhost:80 || echo "Deployment check failed"
